@@ -1,4 +1,4 @@
-import flask, json, os
+import flask, json
 from flask import request
 import RssGetContent
 
@@ -19,8 +19,4 @@ def gamersky():
 
 
 if __name__ == '__main__':
-    server.run(debug=True,
-               port=8999,
-               host='0.0.0.0',
-               threaded=False,
-               processes=os.cpu_count())
+    server.run(debug=True, port=8999, host='0.0.0.0')
