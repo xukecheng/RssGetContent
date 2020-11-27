@@ -22,5 +22,5 @@ if __name__ == '__main__':
     server.run(debug=True,
                port=8999,
                host='0.0.0.0',
-               threaded=Flase,
+               threaded=False,
                processes=os.cpu_count())
