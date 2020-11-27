@@ -19,4 +19,8 @@ def gamersky():
 
 
 if __name__ == '__main__':
-    server.run(debug=True, port=8999, host='0.0.0.0', processes=os.cpu_count())
+    server.run(debug=True,
+               port=8999,
+               host='0.0.0.0',
+               threaded=Flase,
+               processes=os.cpu_count())
