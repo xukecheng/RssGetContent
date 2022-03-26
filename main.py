@@ -24,5 +24,15 @@ def gamersky(url: str):
 
 
 @app.get("/notion")
-def notion(url: str, response_class=HTMLResponse):
-    return RssGetContent.Notion(url=url).getPageHtml()
+def notion(url: str):
+    html_content = RssGetContent.Notion(url=url).getPageHtml()
+    return HTMLResponse(content=html_content, status_code=200)
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app='main:app',
+                host="0.0.0.0",
+                port=9000,
+                reload=True,
+                debug=True)
