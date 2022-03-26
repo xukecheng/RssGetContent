@@ -1,6 +1,7 @@
 import requests
 from bs4 import BeautifulSoup
 import re
+import json
 
 
 class GamerSky():
@@ -54,10 +55,31 @@ class GamerSky():
         return delString(content)
 
 
+class Notion():
+    def __init__(self, url):
+        self.url = url
+
+    def getPageHtml(self) -> list:
+        r = requests.post(
+            'http://10.10.10.2:3001/function',
+            data=json.dumps({
+                'context': {
+                    'url': self.url
+                },
+                'code':
+                "module.exports=async({page:a,context:b})=>{const{url:c}=b;await a.goto(c, { waitUntil: 'networkidle2' }); const content = await a.evaluate(() => document.getElementsByClassName('notion-page-content')[0].innerHTML);return{data: content,type:'application/html'}};"
+            }),
+            headers={'Content-Type': 'application/json'})
+
+        return r.text.replace("/image/https",
+                              "https://www.notion.so/image/https").replace(
+                                  "max-width: 368px", "max-width: 700px")
+
+
 # def writeFile(content, mode):
 #     f = open('./test.html', mode, encoding='utf-8')
 #     f.write(str(content))
 #     f.close()
 
-# url = 'https://ol.gamersky.com/news/202011/1339382.shtml'
-# writeFile(GamerSky(url=url).getContent(), 'w')
+# url = 'https://www.notion.so/pmthinking/Vol-20210328-7bcd279e71dd43f8b6670a96bb8e2b67'
+# writeFile(Notion(url=url).getPageHtml(), 'w')

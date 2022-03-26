@@ -1,6 +1,7 @@
 from typing import Optional
 from fastapi import FastAPI
 import RssGetContent
+from fastapi.responses import HTMLResponse
 
 app = FastAPI()
 
@@ -20,3 +21,8 @@ def gamersky(url: str):
         }
     except Exception:
         return {"code": 200, "data": "参数错误", "message": "success"}
+
+
+@app.get("/notion")
+def notion(url: str, response_class=HTMLResponse):
+    return RssGetContent.Notion(url=url).getPageHtml()
