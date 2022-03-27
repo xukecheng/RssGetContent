@@ -74,12 +74,23 @@ class Notion():
 
         if r.status_code != 200:
             return "error"
-        content = r.text.replace(
-            "/image/https", "https://www.notion.so/image/https").replace(
-                "max-width: 368px",
-                "").replace('href="/', 'href="https://www.notion.so/').replace(
-                    '/images/emoji', 'https://www.notion.so/images/emoji')
-        content = '<div style ="min-width: 780px;max-width: 860px;line-height:1.6;margin: 10px auto; font-size: 1em; ">' + content + '<a href="https://www.notion.so/Vol-20210328-7bcd279e71dd43f8b6670a96bb8e2b67">原文链接</a>' + '</div>'
+
+        need_del_dict = {
+            '/image/https': 'https://www.notion.so/image/https',
+            'href="/': 'href="https://www.notion.so/',
+            '/images/emoji': 'https://www.notion.so/images/emoji'
+        }
+        pattern = re.compile(r'max-width.*?(?:;)')
+        content = r.text
+        need_del_list = pattern.findall(content)
+        need_del_list = list(dict.fromkeys(need_del_list))
+        need_del_list.remove('max-width: 100%;')
+        for item in need_del_list:
+            need_del_dict[item] = ''
+
+        for key in need_del_dict:
+            content = content.replace(key, need_del_dict[key])
+
         pool = redis.ConnectionPool(host='10.10.10.2',
                                     port=6379,
                                     db=1,
@@ -90,11 +101,10 @@ class Notion():
         return content
 
 
-def writeFile(content, mode):
-    f = open('./test.html', mode, encoding='utf-8')
-    f.write(str(content))
-    f.close()
+# def writeFile(content, mode):
+#     f = open('./test.html', mode, encoding='utf-8')
+#     f.write(str(content))
+#     f.close()
 
-
-url = 'https://www.notion.so/Vol-20210328-7bcd279e71dd43f8b6670a96bb8e2b67'
-writeFile(Notion(url=url).getPageHtml(), 'w')
+# url = 'https://www.notion.so/pmthinking/8098b955f40447338821e9054e9ef690'
+# writeFile(Notion(url=url).getPageHtml(), 'w')

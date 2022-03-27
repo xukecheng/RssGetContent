@@ -1,10 +1,11 @@
-from typing import Optional
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
 import RssGetContent
 from fastapi.responses import HTMLResponse
 import redis
+from fastapi.templating import Jinja2Templates
 
 app = FastAPI()
+templates = Jinja2Templates(directory="templates")
 
 
 @app.get("/")
@@ -24,8 +25,8 @@ def gamersky(url: str):
         return {"code": 200, "data": "参数错误", "message": "success"}
 
 
-@app.get("/notion")
-def notion(url: str):
+@app.get("/notion", response_class=HTMLResponse)
+def notion(request: Request, url: str):
     pool = redis.ConnectionPool(host='10.10.10.2',
                                 port=6379,
                                 db=1,
@@ -39,7 +40,11 @@ def notion(url: str):
         print("RssGetContent.Notion 没有获取过该 URL")
         html_content = RssGetContent.Notion(url=url).getPageHtml()
 
-    return HTMLResponse(content=html_content, status_code=200)
+    return templates.TemplateResponse("item.html", {
+        "request": request,
+        "html_content": html_content,
+        "url": url
+    })
 
 
 if __name__ == "__main__":

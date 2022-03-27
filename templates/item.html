@@ -1,0 +1,35 @@
+<html>
+
+<head>
+
+</head>
+
+<body>
+    <div style="min-width: 780px;max-width: 860px;line-height:1.6;margin: 10px auto; font-size: 1rem; ">
+        {{html_content|safe}}
+        <br />
+        <a href={{url}}>原文链接</a>
+    </div>
+</body>
+<script type="text/javascript">
+    //rem适配
+    //rem适配原理：改变了一个元素在不同设备上占据的css像素的个数
+    /*rem适配的优缺点
+        优点:没有破坏完美视口
+        缺点:px值到rem的转换太复杂*/
+
+    (function (doc, win) {
+        if (window.navigator.userAgent.match(/(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone)/i)) {
+            var styleNode = document.createElement("style");
+            styleNode.innerHTML = "html{font-size: 42px}";
+            document.head.appendChild(styleNode);
+        } else {
+            var styleNode = document.createElement("style");
+            styleNode.innerHTML = "html{font-size: 16px}";
+            document.head.appendChild(styleNode);
+        }
+    })(document, window)
+
+</script>
+
+</html>
