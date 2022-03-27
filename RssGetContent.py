@@ -76,9 +76,10 @@ class Notion():
             return "error"
         content = r.text.replace(
             "/image/https", "https://www.notion.so/image/https").replace(
-                "max-width: 368px", "max-width: 700px").replace(
-                    'href="/', 'href="https://www.notion.so/').replace(
-                        '/images/emoji', 'https://www.notion.so/images/emoji')
+                "max-width: 368px",
+                "").replace('href="/', 'href="https://www.notion.so/').replace(
+                    '/images/emoji', 'https://www.notion.so/images/emoji')
+        content = '<div style ="min-width: 780px;max-width: 860px;line-height:1.6;margin: 10px auto; font-size: 1em; ">' + content + '<a href="https://www.notion.so/Vol-20210328-7bcd279e71dd43f8b6670a96bb8e2b67">原文链接</a>' + '</div>'
         pool = redis.ConnectionPool(host='10.10.10.2',
                                     port=6379,
                                     db=1,
@@ -86,7 +87,7 @@ class Notion():
         r = redis.StrictRedis(connection_pool=pool)
         r.set(self.url, content, ex=2592000)
 
-        return content + '<a href="https://www.notion.so/Vol-20210328-7bcd279e71dd43f8b6670a96bb8e2b67">原文链接</a>'
+        return content
 
 
 def writeFile(content, mode):
