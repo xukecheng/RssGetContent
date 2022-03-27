@@ -83,13 +83,14 @@ class Notion():
         r = redis.StrictRedis(connection_pool=pool)
         r.set(self.url, content, ex=2592000)
 
-        return content
+        return content + '<a href="https://www.notion.so/Vol-20210328-7bcd279e71dd43f8b6670a96bb8e2b67">原文链接</a>'
 
 
-# def writeFile(content, mode):
-#     f = open('./test.html', mode, encoding='utf-8')
-#     f.write(str(content))
-#     f.close()
+def writeFile(content, mode):
+    f = open('./test.html', mode, encoding='utf-8')
+    f.write(str(content))
+    f.close()
 
-# url = 'https://www.notion.so/Vol-20210328-7bcd279e71dd43f8b6670a96bb8e2b67'
-# writeFile(Notion(url=url).getPageHtml(), 'w')
+
+url = 'https://www.notion.so/Vol-20210328-7bcd279e71dd43f8b6670a96bb8e2b67'
+writeFile(Notion(url=url).getPageHtml(), 'w')
