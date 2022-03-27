@@ -2,6 +2,7 @@ import requests
 from bs4 import BeautifulSoup
 import re
 import json
+import redis
 
 
 class GamerSky():
@@ -59,7 +60,7 @@ class Notion():
     def __init__(self, url):
         self.url = url
 
-    def getPageHtml(self) -> list:
+    def getPageHtml(self) -> str:
         r = requests.post(
             'http://10.10.10.2:3001/function',
             data=json.dumps({
@@ -70,10 +71,19 @@ class Notion():
                 "module.exports=async({page:a,context:b})=>{const{url:c}=b;await a.goto(c, { waitUntil: 'networkidle2' }); const content = await a.evaluate(() => document.getElementsByClassName('notion-page-content')[0].innerHTML);return{data: content,type:'application/html'}};"
             }),
             headers={'Content-Type': 'application/json'})
+        content = r.text.replace(
+            "/image/https", "https://www.notion.so/image/https").replace(
+                "max-width: 368px", "max-width: 700px").replace(
+                    'href="/', 'href="https://www.notion.so/').replace(
+                        '/images/emoji', 'https://www.notion.so/images/emoji')
+        pool = redis.ConnectionPool(host='10.10.10.2',
+                                    port=6379,
+                                    db=1,
+                                    decode_responses=True)
+        r = redis.StrictRedis(connection_pool=pool)
+        r.set(self.url, content, ex=2592000)
 
-        return r.text.replace("/image/https",
-                              "https://www.notion.so/image/https").replace(
-                                  "max-width: 368px", "max-width: 700px")
+        return content
 
 
 # def writeFile(content, mode):
@@ -81,5 +91,5 @@ class Notion():
 #     f.write(str(content))
 #     f.close()
 
-# url = 'https://www.notion.so/pmthinking/Vol-20210328-7bcd279e71dd43f8b6670a96bb8e2b67'
+# url = 'https://www.notion.so/Vol-20210328-7bcd279e71dd43f8b6670a96bb8e2b67'
 # writeFile(Notion(url=url).getPageHtml(), 'w')

@@ -2,6 +2,7 @@ from typing import Optional
 from fastapi import FastAPI
 import RssGetContent
 from fastapi.responses import HTMLResponse
+import redis
 
 app = FastAPI()
 
@@ -25,7 +26,19 @@ def gamersky(url: str):
 
 @app.get("/notion")
 def notion(url: str):
-    html_content = RssGetContent.Notion(url=url).getPageHtml()
+    pool = redis.ConnectionPool(host='10.10.10.2',
+                                port=6379,
+                                db=1,
+                                decode_responses=True)
+    r = redis.StrictRedis(connection_pool=pool)
+    rget = r.get(url)
+    if rget:
+        print("RssGetContent.Notion 已获取过该 URL")
+        html_content = rget
+    else:
+        print("RssGetContent.Notion 没有获取过该 URL")
+        html_content = RssGetContent.Notion(url=url).getPageHtml()
+
     return HTMLResponse(content=html_content, status_code=200)
 
 
