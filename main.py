@@ -32,7 +32,7 @@ def notion(url: str):
                                 decode_responses=True)
     r = redis.StrictRedis(connection_pool=pool)
     rget = r.get(url)
-    if rget:
+    if rget and rget != "error":
         print("RssGetContent.Notion 已获取过该 URL")
         html_content = rget
     else:

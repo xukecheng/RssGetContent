@@ -71,6 +71,9 @@ class Notion():
                 "module.exports=async({page:a,context:b})=>{const{url:c}=b;await a.goto(c, { waitUntil: 'networkidle2' }); const content = await a.evaluate(() => document.getElementsByClassName('notion-page-content')[0].innerHTML);return{data: content,type:'application/html'}};"
             }),
             headers={'Content-Type': 'application/json'})
+
+        if r.status_code != 200:
+            return "error"
         content = r.text.replace(
             "/image/https", "https://www.notion.so/image/https").replace(
                 "max-width: 368px", "max-width: 700px").replace(
