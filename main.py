@@ -1,20 +1,49 @@
 from fastapi import FastAPI, Request
-import RssGetContent
 from fastapi.responses import HTMLResponse
-import redis
 from fastapi.templating import Jinja2Templates
+import aioredis
+import os
+import RssGetContent
 
 app = FastAPI()
 templates = Jinja2Templates(directory="templates")
 
 
+async def get_redis_pool():
+    redis_host = os.getenv('REDIS_HOST')
+    redis_port = os.getenv('REDIS_PORT')
+    redis = await aioredis.from_url(
+        f"redis://{redis_host}:{redis_port}/1?encoding=utf-8",
+        decode_responses=True)
+    return redis
+
+
+@app.on_event('startup')
+async def startup_event():
+    """
+    获取链接
+    :return:
+    """
+    app.state.redis = await get_redis_pool()
+
+
+@app.on_event('shutdown')
+async def shutdown_event():
+    """
+    关闭
+    :return:
+    """
+    app.state.redis.close()
+    await app.state.redis.wait_closed()
+
+
 @app.get("/")
-def read_root():
+async def read_root():
     return {"Hello": "World"}
 
 
 @app.get("/gamersky")
-def gamersky(url: str):
+async def gamersky(url: str):
     try:
         return {
             "code": 200,
@@ -26,19 +55,16 @@ def gamersky(url: str):
 
 
 @app.get("/notion", response_class=HTMLResponse)
-def notion(request: Request, url: str):
-    pool = redis.ConnectionPool(host='10.10.10.2',
-                                port=6379,
-                                db=1,
-                                decode_responses=True)
-    r = redis.StrictRedis(connection_pool=pool)
-    rget = r.get(url)
+async def notion(request: Request, url: str):
+    rget = await request.app.state.redis.get(url)
     if rget and rget != "error":
         print("RssGetContent.Notion 已获取过该 URL")
         html_content = rget
     else:
         print("RssGetContent.Notion 没有获取过该 URL")
-        html_content = RssGetContent.Notion(url=url).getPageHtml()
+        html_content = RssGetContent.Notion(
+            url=url, redis=request.app.state.redis).getPageHtml()
+        await request.app.state.redis.set(url, html_content, ex=2592000)
 
     return templates.TemplateResponse("item.html", {
         "request": request,

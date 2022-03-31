@@ -2,7 +2,6 @@ import requests
 from bs4 import BeautifulSoup
 import re
 import json
-import redis
 
 
 class GamerSky():
@@ -57,7 +56,7 @@ class GamerSky():
 
 
 class Notion():
-    def __init__(self, url):
+    def __init__(self, url: str):
         self.url = url
 
     def getPageHtml(self) -> str:
@@ -90,13 +89,6 @@ class Notion():
 
         for key in need_del_dict:
             content = content.replace(key, need_del_dict[key])
-
-        pool = redis.ConnectionPool(host='10.10.10.2',
-                                    port=6379,
-                                    db=1,
-                                    decode_responses=True)
-        r = redis.StrictRedis(connection_pool=pool)
-        r.set(self.url, content, ex=2592000)
 
         return content
 
