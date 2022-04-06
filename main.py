@@ -62,8 +62,7 @@ async def notion(request: Request, url: str):
         html_content = rget
     else:
         print("RssGetContent.Notion 没有获取过该 URL")
-        html_content = RssGetContent.Notion(
-            url=url, redis=request.app.state.redis).getPageHtml()
+        html_content = RssGetContent.Notion(url=url).getPageHtml()
         await request.app.state.redis.set(url, html_content, ex=2592000)
 
     return templates.TemplateResponse("item.html", {
