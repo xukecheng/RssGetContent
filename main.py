@@ -1,6 +1,7 @@
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
+from typing import Optional
 import aioredis
 import os
 import RssGetContent
@@ -55,8 +56,14 @@ async def gamersky(url: str):
 
 
 @app.get("/notion", response_class=HTMLResponse)
-async def notion(request: Request, url: str):
-    rget = await request.app.state.redis.get(url)
+async def notion(request: Request,
+                 url: str,
+                 force_refresh: Optional[str] = None):
+
+    if not force_refresh:
+        rget = "error"
+    else:
+        rget = await request.app.state.redis.get(url)
     if rget and rget != "error":
         print("RssGetContent.Notion 已获取过该 URL")
         html_content = rget
