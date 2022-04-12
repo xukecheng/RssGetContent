@@ -60,10 +60,10 @@ async def notion(request: Request,
                  url: str,
                  force_refresh: Optional[str] = None):
 
-    if not force_refresh:
-        rget = "error"
-    else:
+    if not force_refresh or force_refresh == 'false':
         rget = await request.app.state.redis.get(url)
+    else:
+        rget = "error"
     if rget and rget != "error":
         print("RssGetContent.Notion 已获取过该 URL")
         html_content = rget
