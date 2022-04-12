@@ -2,6 +2,10 @@ import requests
 from bs4 import BeautifulSoup
 import re
 import json
+import os
+import time
+from qcloud_cos import CosConfig
+from qcloud_cos import CosS3Client
 
 
 class GamerSky():
@@ -67,7 +71,7 @@ class Notion():
                     'url': self.url
                 },
                 'code':
-                "module.exports=async({page:a,context:b})=>{const{url:c}=b;await a.goto(c, { waitUntil: 'networkidle2' }); const content = await a.evaluate(() => document.getElementsByClassName('notion-page-content')[0].innerHTML);return{data: content,type:'application/html'}};"
+                "module.exports=async({page,context:b})=>{const{url}=b;await page.goto(url,{waitUntil:'networkidle2'});const data=await page.evaluate(()=>{var html=document.getElementsByClassName('notion-page-content')[0].innerHTML;var frag=document.createElement('div');frag.innerHTML=html;var imglist=[].map.call(frag.querySelectorAll('img'),function(img){return img.src});return{html:frag.innerHTML,imglist}});return{data:data,type:'application/json'}};"
             }),
             headers={'Content-Type': 'application/json'})
 
@@ -80,7 +84,11 @@ class Notion():
             '/images/emoji': 'https://www.notion.so/images/emoji'
         }
         pattern = re.compile(r'max-width.*?(?:;)')
-        content = r.text
+
+        json_response = r.content.decode()
+        json_dict = json.loads(json_response)
+
+        content = json_dict['html']
         need_del_list = pattern.findall(content)
         need_del_list = list(dict.fromkeys(need_del_list))
         need_del_list.remove('max-width: 100%;')
@@ -90,13 +98,51 @@ class Notion():
         for key in need_del_dict:
             content = content.replace(key, need_del_dict[key])
 
+        img_pattern = re.compile(
+            r'https:\/\/www\.notion\.so\/image\/https.*?(?:;cache=v2)')
+        img_url_list = img_pattern.findall(content)
+
+        for img_url in img_url_list:
+            secret_id = os.getenv('SECRET_ID')
+            secret_key = os.getenv('SECRET_KEY')
+            region = os.getenv('REGION')
+            bucket = os.getenv('BUCKET')
+            base_url = os.getenv('CDNURL')
+
+            token = None
+            scheme = 'https'
+
+            config = CosConfig(Region=region,
+                               SecretId=secret_id,
+                               SecretKey=secret_key,
+                               Token=token,
+                               Scheme=scheme)
+            client = CosS3Client(config)
+
+            r = requests.get(img_url.replace("amp;", ""))
+
+            file_name = r.headers['Content-Type'] + "/" + str(int(
+                time.time())) + "." + r.headers['Content-Type'].split('/')[-1]
+
+            file_url = f"{base_url}{file_name}"
+
+            response = client.put_object(
+                Bucket=bucket,
+                Body=r.content,
+                Key=file_name,
+            )
+            print(response)
+
+            content = content.replace(img_url, file_url)
+
         return content
 
 
-# def writeFile(content, mode):
-#     f = open('./test.html', mode, encoding='utf-8')
-#     f.write(str(content))
-#     f.close()
+def writeFile(content, mode):
+    f = open('./test.html', mode, encoding='utf-8')
+    f.write(str(content))
+    f.close()
 
-# url = 'https://www.notion.so/pmthinking/8098b955f40447338821e9054e9ef690'
-# writeFile(Notion(url=url).getPageHtml(), 'w')
+
+url = 'https://www.notion.so/pmthinking/Vol-20220320-bba15d39faa74f4c83e04f76a4ea6e79'
+writeFile(Notion(url=url).getPageHtml(), 'w')
