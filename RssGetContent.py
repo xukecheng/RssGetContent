@@ -120,6 +120,11 @@ class Notion():
             client = CosS3Client(config)
 
             r = requests.get(img_url.replace("amp;", ""))
+            print(img_url.replace("amp;", ""))
+            print(img_url.replace("amp;", ""))
+
+            if r.headers['Content-Type'].find('image') == -1:
+                continue
 
             file_name = r.headers['Content-Type'] + "/" + str(int(
                 time.time())) + "." + r.headers['Content-Type'].split('/')[-1]
@@ -132,6 +137,7 @@ class Notion():
                 Key=file_name,
             )
             print(response)
+            print(file_url)
 
             content = content.replace(img_url, file_url)
 

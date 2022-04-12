@@ -1,4 +1,4 @@
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, routing
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 from typing import Optional
@@ -69,7 +69,7 @@ async def notion(request: Request,
         html_content = rget
     else:
         print("RssGetContent.Notion 没有获取过该 URL")
-        html_content = RssGetContent.Notion(url=url).getPageHtml()
+        html_content = await routing.run_in_threadpool(RssGetContent.Notion(url).getPageHtml)
         await request.app.state.redis.set(url, html_content)
 
     return templates.TemplateResponse("item.html", {
@@ -83,6 +83,6 @@ if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app='main:app',
                 host="0.0.0.0",
-                port=9000,
+                port=8999,
                 reload=True,
                 debug=True)
