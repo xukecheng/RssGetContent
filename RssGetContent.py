@@ -144,11 +144,11 @@ class Notion():
         return content
 
 
-def writeFile(content, mode):
-    f = open('./test.html', mode, encoding='utf-8')
-    f.write(str(content))
-    f.close()
+# def writeFile(content, mode):
+#     f = open('./test.html', mode, encoding='utf-8')
+#     f.write(str(content))
+#     f.close()
 
 
-url = 'https://www.notion.so/pmthinking/Vol-20220320-bba15d39faa74f4c83e04f76a4ea6e79'
-writeFile(Notion(url=url).getPageHtml(), 'w')
+# url = 'https://www.notion.so/pmthinking/Vol-20220320-bba15d39faa74f4c83e04f76a4ea6e79'
+# writeFile(Notion(url=url).getPageHtml(), 'w')
