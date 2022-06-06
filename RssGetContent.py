@@ -67,7 +67,7 @@ class Notion:
         browserless_url = os.getenv("BROWSERLESS_URL")
         browserless_token = os.getenv("BROWSERLESS_TOKEN")
         r = requests.post(
-            f"{browserless_url}/function?token=f{browserless_token}",
+            f"{browserless_url}/function?token={browserless_token}",
             data=json.dumps(
                 {
                     "context": {"url": self.url},
@@ -154,11 +154,11 @@ class Notion:
         return content
 
 
-# def writeFile(content, mode):
-#     f = open('./test.html', mode, encoding='utf-8')
-#     f.write(str(content))
-#     f.close()
+def writeFile(content, mode):
+    f = open("./test.html", mode, encoding="utf-8")
+    f.write(str(content))
+    f.close()
 
 
-# url = 'https://www.notion.so/pmthinking/Vol-20220320-bba15d39faa74f4c83e04f76a4ea6e79'
-# writeFile(Notion(url=url).getPageHtml(), 'w')
+url = "https://www.notion.so/pmthinking/Vol-20220529-d10f4b2859074e76bf38cb457b6cb5fc"
+writeFile(Notion(url=url).getPageHtml(), "w")
